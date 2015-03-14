@@ -1,0 +1,25 @@
+{
+  "name": "SimpleApp",
+  "version": "1.0",
+  "authors": [],
+  "description": "Bare bones app.",
+  "main": "app/index.html",
+  "moduleType": [
+    "node"
+  ],
+  "keywords": [
+    "SimpleApp"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "~2.1.3"
+  }
+}

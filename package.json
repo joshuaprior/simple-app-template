@@ -1,0 +1,23 @@
+{
+  "name": "SimpleAppServer",
+  "version": "0.1.0",
+  "description": "Bare bone app server.",
+  "main": "server.js",
+  "dependencies": {
+    "body-parser": "*",
+    "bower": "*",
+    "express": "*",
+    "serve-static": "*",
+    "sqlite3": "~3.0.5",
+    "nedb": "~1.1.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "SimpleApp",
+    "simple-app"
+  ],
+  "license": "MIT"
+}
