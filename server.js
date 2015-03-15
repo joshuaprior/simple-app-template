@@ -1,5 +1,7 @@
 var express = require('express');
 var bodyParser = require('body-parser');
+var sqlite3 = require('sqlite3').verbose();
+var knex = require('knex');
 
 var options = {
     port: 8080,
@@ -83,32 +85,91 @@ app.route('/rest/echo/:id')
 
 
 
-var sqlite3 = require('sqlite3').verbose();
-var db = new sqlite3.Database('data/sql_database.dat', function(err){
-    if(err) throw err;
-    
-    db.serialize(function() {
-        /*db.run('DROP TABLE lorem');
-        db.run("CREATE TABLE lorem (info TEXT)");
-
-        var stmt = db.prepare("INSERT INTO lorem VALUES (?)");
-        for (var i = 0; i < 10; i++) {
-            stmt.run("Ipsum " + i);
-        }
-        stmt.finalize();
-        */
-
-        db.each("SELECT rowid AS id, info FROM lorem", function(err, row) {
-            console.log(row.id + ": " + row.info);
-        });
-    });
-
-    db.close();
+/* Here is how to set up a basic relational database.
+ * Documentation:
+ *      Knex.js: http://knexjs.org/
+ *      node-sqlite3: https://github.com/mapbox/node-sqlite3/wiki
+ *      SQLite: https://sqlite.org
+ *          SQL Syntax: https://sqlite.org/lang.html
+ *          Datatypes: https://sqlite.org/datatype3.html
+ * * * * * * * * * * * * * * * * * * * * * * * * * * */
+var db = knex({
+    dialect: 'sqlite3',
+    connection: {
+        filename: 'data/sql_database.dat'
+    }
 });
+
+db.schema
+    // clean the demo database
+    .dropTableIfExists('tracks')
+    .dropTableIfExists('artists')
+
+    // create the tables
+    .createTable('artists', function(table){
+        table.increments('id');
+        table.text('name');
+    })
+    .createTable('tracks', function(table){
+        table.increments('id');
+        table.integer('artist_id').notNullable().references('artists.id');
+        table.text('name');
+        table.integer('playtime');
+    })
+    
+    // Metalica
+    .then(function(){
+        return db('artists').insert({name:'Metalica'});
+    })
+    .then(function(id){
+        id = id[0];
+        return db('tracks').insert([
+            {artist_id: id, name: 'Fade to Black'},
+            {artist_id: id, name: "It's Electric"},
+            {artist_id: id, name: 'Sabbra Cadabra'},
+            {artist_id: id, name: 'Whiskey in the Jar'},
+        ]);
+    })
+    
+    // Michael Jackson
+    .then(function(){
+        return db('artists').insert({name: 'Michael Jackson'});
+    })
+    .then(function(id){
+        id = id[0];
+        return db('tracks').insert([
+            {artist_id: id, name: 'Billie Jean'},
+            {artist_id: id, name: 'Thriller'},
+            {artist_id: id, name: 'Beat It'},
+            {artist_id: id, name: 'Man in the Mirror'},
+        ]);
+    })
+    
+    // query the data that was just inserted
+    .then(function(){
+        return db('artists')
+            .join('tracks', 'artists.id', 'tracks.artist_id')
+            .select('artists.name as artist', 'tracks.name as track');
+    })
+    
+    .then(function(){
+        return db('tracks')
+            .select('artists.name as artist')
+            .join('artists', 'artists.id', 'tracks.id')
+            .where();
+    })
+    
+    // hook into the map function so we can print out the results
+    .map(function(row) {
+        console.log(row);
+    })
+    .catch(function(e) {
+        console.error(e);
+    })
+    .then(function(){
+        db.destroy();
+    });
  
-
-
-
 
 
 
